@@ -1,0 +1,277 @@
+#Data: índice de Paz y Seguridad de las mujeres
+
+```{r}
+library(rvest)
+library(xml2)
+
+url <- "https://en.wikipedia.org/wiki/Women_Peace_and_Security_Index"
+
+pagina_web <- read_html(url)
+
+tabla <- pagina_web %>%
+  html_node(xpath = '//*[@id="mw-content-text"]/div[1]/table') %>%
+  html_table()
+
+print(tabla)
+
+```
+
+```{r}
+tabla <- tabla[ , -1]
+```
+
+```{r}
+colnames(tabla)[1] <- "País"
+```
+
+```{r}
+colnames(tabla)[2] <- "WPSindex"
+```
+
+```{r}
+library(plyr)
+paisesING <- c("Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Armenia", 
+                   "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Barbados", 
+                   "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", 
+                   "Bosnia and Herzegovina", "Botswana", "Brazil", "Bulgaria", "Burkina Faso", 
+                   "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", 
+                   "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", 
+                   "Congo", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cyprus", "Czechia", 
+                   "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominican Republic", 
+                   "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Estonia", 
+                   "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", 
+                   "Georgia", "Germany", "Ghana", "Greece", "Guatemala", "Guinea", 
+                   "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", 
+                   "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", 
+                   "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kosovo", "Kuwait", 
+                   "Kyrgyzstan", "Lao PDR", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", 
+                   "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", 
+                   "Mali", "Malta", "Mauritania", "Mauritius", "Mexico", "Moldova", "Mongolia", 
+                   "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nepal", 
+                   "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Macedonia", 
+                   "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Papua New Guinea", 
+                   "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", 
+                   "Qatar", "Romania", "Russian Federation", "Rwanda", "Samoa", 
+                   "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", 
+                   "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", 
+                   "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", 
+                   "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", 
+                   "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", 
+                   "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Uganda", 
+                   "Ukraine", "United Arab Emirates", "United Kingdom", "United States", 
+                   "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", 
+                   "Zimbabwe")
+
+paisesESP <- c("Afganistán", "Albania", "Argelia", "Angola", "Argentina", "Armenia", 
+                    "Australia", "Austria", "Azerbaiyán", "Baréin", "Bangladés", "Barbados", 
+                    "Bielorrusia", "Bélgica", "Belice", "Benín", "Bután", "Bolivia", 
+                    "Bosnia y Herzegovina", "Botsuana", "Brasil", "Bulgaria", "Burkina Faso", 
+                    "Burundi", "Cabo Verde", "Camboya", "Camerún", "Canadá", 
+                    "República Centroafricana", "Chad", "Chile", "China", "Colombia", "Comoras", 
+                    "Congo", "Costa Rica", "Costa de Marfil", "Croacia", "Chipre", "Chequia", 
+                    "República Democrática del Congo", "Dinamarca", "Yibuti", "República Dominicana", 
+                    "Ecuador", "Egipto", "El Salvador", "Guinea Ecuatorial", "Estonia", 
+                    "Esuatini", "Etiopía", "Fiyi", "Finlandia", "Francia", "Gabón", "Gambia", 
+                    "Georgia", "Alemania", "Ghana", "Grecia", "Guatemala", "Guinea", 
+                    "Guinea-Bisáu", "Guyana", "Haití", "Honduras", "Hong Kong", "Hungría", 
+                    "Islandia", "India", "Indonesia", "Irán", "Irak", "Irlanda", "Israel", "Italia", 
+                    "Jamaica", "Japón", "Jordania", "Kazajistán", "Kenia", "Kosovo", "Kuwait", 
+                    "Kirguistán", "Laos", "Letonia", "Líbano", "Lesoto", "Liberia", "Libia", 
+                    "Lituania", "Luxemburgo", "Madagascar", "Malaui", "Malasia", "Maldivas", 
+                    "Malí", "Malta", "Mauritania", "Mauricio", "México", "Moldavia", "Mongolia", 
+                    "Montenegro", "Marruecos", "Mozambique", "Birmania", "Namibia", "Nepal", 
+                    "Países Bajos", "Nueva Zelanda", "Nicaragua", "Níger", "Nigeria", "Macedonia del Norte", 
+                    "Noruega", "Omán", "Pakistán", "Palestina", "Panamá", "Papúa Nueva Guinea", 
+                    "Paraguay", "Perú", "Filipinas", "Polonia", "Portugal", "Puerto Rico", 
+                    "Catar", "Rumania", "Rusia", "Ruanda", "Samoa", 
+                    "Santo Tomé y Príncipe", "Arabia Saudita", "Senegal", "Serbia", "Seychelles", 
+                    "Sierra Leona", "Singapur", "Eslovaquia", "Eslovenia", "Islas Salomón", 
+                    "Somalia", "Sudáfrica", "Corea del Sur", "Sudán del Sur", "España", "Sri Lanka", 
+                    "Sudán", "Surinam", "Suecia", "Suiza", "Siria", "Taiwán", 
+                    "Tayikistán", "Tanzania", "Tailandia", "Timor-Leste", "Togo", "Tonga", 
+                    "Trinidad y Tobago", "Túnez", "Turquía", "Turkmenistán", "Uganda", 
+                    "Ucrania", "Emiratos Árabes Unidos", "Reino Unido", "Estados Unidos", 
+                    "Uruguay", "Uzbekistán", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", 
+                    "Zimbabue")
+
+tabla$País <- mapvalues(tabla$País, from = paisesING, to = paisesESP)
+
+```
+
+
+#Data Brecha de género 
+```{r}
+url <- "https://datosmacro.expansion.com/demografia/indice-brecha-genero-global"
+
+pagina_web <- read_html(url)
+
+tabla2 <- pagina_web %>%
+  html_node(xpath = '//*[@id="tb1"]') %>%
+  html_table()
+
+print(tabla2)
+```
+
+```{r}
+tabla2 <- tabla2[ , -c(2, 4, 5)]
+```
+
+```{r}
+tabla2$Países <- gsub(" \\[\\+\\]", "", tabla2$Países)
+
+```
+
+```{r}
+colnames(tabla2)[1] <- "País"
+```
+
+```{r}
+print(tabla2)
+```
+
+#Data Democracia
+```{r}
+url <- "https://es.wikipedia.org/wiki/Anexo:%C3%8Dndice_de_democracia_2022"
+
+pagina_web <- read_html(url)
+
+tabla3 <- pagina_web %>%
+  html_node(xpath = '//*[@id="mw-content-text"]/div[1]/table') %>%
+  html_table()
+
+print(tabla3)
+```
+
+```{r}
+tabla3 <- tabla3[ , -c(1, 4, 5, 6, 7, 8, 9)]
+```
+
+```{r}
+colnames(tabla3)[2] <- "Democracia"
+```
+#Data Tasa de alfabetización
+
+```{r}
+url <- "https://datosmacro.expansion.com/demografia/tasa-alfabetizacion?anio=2022"
+
+pagina_web <- read_html(url)
+
+tabla4 <- pagina_web %>%
+  html_node(xpath = '//*[@id="tb1"]') %>%
+  html_table()
+
+print(tabla4)
+```
+
+```{r}
+tabla4 <- tabla4[ , -c(2, 4, 5, 6, 7, 8)]
+```
+
+```{r}
+tabla4$Países <- gsub(" \\[\\+\\]", "", tabla4$Países)
+```
+
+```{r}
+tabla4$`Tasa de alfabetización mujeres` <- as.numeric(gsub(",", ".", gsub("%", "", tabla4$`Tasa de alfabetización mujeres`))) / 100
+
+print(tabla4)
+
+```
+
+```{r}
+colnames(tabla4)[2] <- "Alfabetización_fem"
+```
+
+```{r}
+colnames(tabla4)[1] <- "País"
+```
+
+#Data Nivel de pobreza 2022
+```{r}
+url <- "https://es.wikipedia.org/wiki/Anexo:Pa%C3%ADses_por_porcentaje_de_poblaci%C3%B3n_debajo_de_la_l%C3%ADnea_de_pobreza"
+
+pagina_web <- read_html(url)
+
+tabla5 <- pagina_web %>%
+  html_node(xpath = '//*[@id="mw-content-text"]/div[1]/table[1]') %>%
+  html_table()
+
+print(tabla5)
+```
+
+```{r}
+tabla5 <- tabla5[-c(1, 2), ]
+```
+
+```{r}
+tabla5 <- tabla5[ , -c(1, 4, 5, 6, 7)]
+```
+
+```{r}
+colnames(tabla5)[1] <- "País"
+```
+
+```{r}
+colnames(tabla5)[2] <- "pobreza"
+```
+
+```{r}
+tabla5$pobreza <- as.numeric(gsub(",", ".", gsub("%", "", tabla5$pobreza))) / 100
+```
+
+
+
+#IDH 2022
+```{r}
+url <- "https://es.wikipedia.org/wiki/Anexo:Pa%C3%ADses_por_%C3%ADndice_de_desarrollo_humano"
+
+pagina_web <- read_html(url)
+
+tabla6 <- pagina_web %>%
+  html_node(xpath = '//*[@id="mw-content-text"]/div[1]/table[2]') %>%
+  html_table()
+
+print(tabla6)
+```
+
+```{r}
+tabla6 <- tabla6[-c(1, 2), ]
+```
+
+```{r}
+tabla6 <- tabla6[, -c(1, 4, 5, 6, 7, 8)]
+```
+
+```{r}
+colnames(tabla6)[2] <- "IDH"
+```
+
+
+#-----
+```{r}
+library(writexl)
+```
+
+```{r}
+write_xlsx(tabla, "WPSindex.xlsx")
+```
+
+```{r}
+write_xlsx(tabla2, "Brechagenero.xlsx")
+```
+
+```{r}
+write_xlsx(tabla3, "Democracia.xlsx")
+```
+
+```{r}
+write_xlsx(tabla4, "Alfabetización.xlsx")
+```
+
+```{r}
+write_xlsx(tabla5, "pobreza.xlsx")
+```
+
+```{r}
+write_xlsx(tabla6, "IDH.xlsx")
+```

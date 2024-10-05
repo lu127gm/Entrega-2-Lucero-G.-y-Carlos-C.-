@@ -1,0 +1,36 @@
+#VD
+```{r}
+library(readxl)
+data1 <- read_excel("WPSindex.xlsx")
+```
+
+#VI
+```{r}
+data2 <- read_excel("IDH.xlsx")
+data3 <- read_excel("Democracia.xlsx")
+data4 <- read_excel("Brechagenero.xlsx")
+data5 <- read_excel("Alfabetización.xlsx")
+```
+
+#VC
+```{r}
+data6 <- read_excel("Pobreza.xlsx")
+```
+
+#MERGE
+```{r}
+merged_data <- data1
+for (i in 2:6) {
+  merged_data <- merge(merged_data, get(paste0("data", i)), by = "País", all.x = TRUE)
+}
+```
+
+```{r}
+merged_data[is.na(merged_data)] <- 0
+```
+
+```{r}
+library(writexl)
+write_xlsx(merged_data, "Datafinal.csv")
+```
+
